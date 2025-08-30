@@ -1,0 +1,25 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="card p-4 mt-4">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label for="originalFile" class="form-label">Original File</label>
+            <input class="form-control" type="file" id="originalFile" name="original_file" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="signatureFile" class="form-label">Signature File (.json)</label>
+            <input class="form-control" type="file" id="signatureFile" name="signature_file" required>
+        </div>
+        
+        <div class="d-grid">
+            <button type="submit" class="btn btn-primary">Verify Signature</button>
+        </div>
+    </form>
+</div>
+
+{% endblock content %}

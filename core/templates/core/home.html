@@ -1,0 +1,36 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% load static %}
+
+<div class="container py-2">
+    <div class="row justify-content-center text-center">
+        <form id="upload-form" method="post" enctype="multipart/form-data" action="{% url 'upload_action' %}">
+            {% csrf_token %}
+            <h2>Upload files to create Digital Signatures</h2>
+
+            <div id="drop-zone" class="drop-zone text-center" style="border-width: 4px; margin-top: 30px; margin-bottom: 20px;">
+                <div id="preview-container"></div>
+                <div id="fileNameDisplay" style="margin-top: 10px; font-weight: bold;"></div>
+
+                <div id="upload-prompt">
+                    <img src="{% static 'core/file-regular-full.svg' %}" style="width: 55px; opacity: 0.6;">
+                    <p>Drag and drop files here</p>
+                    <p>Or</p>
+                    <button type="button" id="select-file-btn" class="btn">Select file</button>
+                </div>
+
+                <input type="file" id="file-input" name="uploaded_file" style="display: none;">
+            </div>
+
+            <p class="max-file-size">Max file size: 256MB</p>
+            {% if user.is_authenticated %}
+            <button type="submit" class="btn btn-outline-primary" style="width: 80%;">Upload!</button>
+            {% else %}
+            <p class="text-center text-danger mt-3">You must be logged in to sign and upload a file.</p>
+            <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-outline-primary" style="width: 80%;">Login to Upload</a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+<script src="{% static 'core/preview.js' %}"></script>
+{% endblock content %}

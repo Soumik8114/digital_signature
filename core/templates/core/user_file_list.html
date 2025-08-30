@@ -1,0 +1,47 @@
+{% extends "core/base.html" %}
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">My Uploaded Files</h2>
+
+    {% if files %}
+    <div class="list-group">
+        {% for file in files %}
+        <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+            <span>
+                📄 {{ file }}
+                <small class="text-muted"> (Uploaded on: {{ file.upload_date|date:"F d, Y" }})</small>
+            </span>
+            {% if file.signature %}
+            <div>
+                <span class="badge bg-success">Signed ✅</span>
+                <a href="{{ file.uploaded_file.url }}" class="btn btn-sm btn-outline-primary ms-2" download>
+                    Download File
+                </a>
+
+                <a href="{% url 'download_signature' file.id %}" class="btn btn-sm btn-outline-secondary">
+                    Download Signature
+                </a>
+            </div>
+            {% else %}
+            <span class="badge bg-warning text-dark">Not Signed ⚠️</span>
+            <a href="{{ file.uploaded_file.url }}" class="btn btn-sm btn-outline-primary ms-2" download>
+                Download File
+            </a>
+            <form action="{% url 'sign_file' %}" method="post" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="file_id" value="{{ file.id }}">
+                <button type="submit" class="btn btn-sm btn-primary">Sign File</button>
+            </form>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info" role="alert">
+        You haven't uploaded any files yet. <a href="{% url 'sign-home' %}" class="alert-link">Upload your first
+            file!</a>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock content %}
