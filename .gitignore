@@ -12,6 +12,7 @@ env/
 
 # User-uploaded files
 media/
+profile_pics/
 
 # Environment variables (IMPORTANT)
 .env

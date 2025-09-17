@@ -2,7 +2,8 @@
 {% load static %}
 {% block content %}
 
-<div class="card p-4 mt-4">
+<div class="card p-4 mt-5">
+    <h2>Verify Signature</h2>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
 

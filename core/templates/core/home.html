@@ -8,7 +8,7 @@
             {% csrf_token %}
             <h2>Upload files to create Digital Signatures</h2>
 
-            <div id="drop-zone" class="drop-zone text-center" style="border-width: 4px; margin-top: 30px; margin-bottom: 20px;">
+            <div id="drop-zone" class="drop-zone text-center mx-auto" style="border-width: 4px; margin-top: 30px; margin-bottom: 20px; width: 80%;">
                 <div id="preview-container"></div>
                 <div id="fileNameDisplay" style="margin-top: 10px; font-weight: bold;"></div>
 
@@ -16,7 +16,7 @@
                     <img src="{% static 'core/file-regular-full.svg' %}" style="width: 55px; opacity: 0.6;">
                     <p>Drag and drop files here</p>
                     <p>Or</p>
-                    <button type="button" id="select-file-btn" class="btn">Select file</button>
+                    <button type="button" id="select-file-btn" class="btn" style="background-color: rgba(128, 128, 128, 0.114);">Select file</button>
                 </div>
 
                 <input type="file" id="file-input" name="uploaded_file" style="display: none;">

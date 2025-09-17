@@ -50,9 +50,9 @@ a.article-title:hover {
 }
 
 .article-img {
-  height: 65px;
-  width: 65px;
-  margin-right: 16px;
+  height: 28px;
+  width: 28px;
+  margin-right: 4px;
 }
 
 .article-metadata {

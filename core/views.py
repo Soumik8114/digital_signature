@@ -8,6 +8,8 @@ from django.http import HttpResponse
 from .models import UploadedFile,UserKeyPair
 from .utils import sign_message, decrypt_key,verify_signature
 from django.contrib.auth.models import User
+from django.views.generic import ListView
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 def home(request):
     return render(request, 'core/home.html')
@@ -28,14 +30,13 @@ def upload_view(request):
     
     return redirect('sign-home')
 
-@login_required
-def user_file_list(request):
-    user_files = UploadedFile.objects.filter(owner=request.user)
-    
-    context = {
-        'files': user_files
-    }
-    return render(request, 'core/user_file_list.html', context)
+class UserFileListView(LoginRequiredMixin, ListView):
+    model = UploadedFile
+    template_name = 'core/user_file_list.html'
+    context_object_name = 'files'
+
+    def get_queryset(self):
+        return UploadedFile.objects.filter(owner=self.request.user)
 
 @login_required
 def sign_file_view(request):
