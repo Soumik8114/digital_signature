@@ -19,7 +19,7 @@ This is a web application built with Django that allows users to upload, digital
 2.  **Create and activate a virtual environment:**
     ```bash
     python -m venv venv
-    venv/bin/activate
+    venv/Scripts/Activate.ps1
     ```
 3.  **Install dependencies:**
     ```bash
