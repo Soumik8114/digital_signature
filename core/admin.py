@@ -8,6 +8,15 @@ class UploadedFileAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'owner', 'upload_date','signature')
     fields = ('uploaded_file', 'owner', 'upload_date','signature')
 
+    def delete_model(self, request, obj):
+        obj.uploaded_file.delete(save=False)
+        super().delete_model(request, obj)
+
+    def delete_queryset(self, request, queryset):
+        for obj in queryset:
+            obj.uploaded_file.delete(save=False)
+        super().delete_queryset(request, queryset)
+
 class CustomUserAdmin(BaseUserAdmin):
     actions = ['regenerate_key_pairs']
 

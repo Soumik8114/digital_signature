@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm
 from .forms import UserRegisterForm,UserUpdateForm,ProfileUpdateForm
 from django.contrib.auth.decorators import login_required
+import os
 
 def register(request):
     if request.method=="POST":
@@ -23,7 +24,17 @@ def profile(request):
         p_form=ProfileUpdateForm(request.POST, 
                                  request.FILES, 
                                  instance=request.user.profile)
+        old_image = request.user.profile.image
         if u_form.is_valid() and p_form.is_valid():
+            # Check if a new image is being uploaded
+            if 'image' in request.FILES:
+                if old_image and os.path.basename(old_image.name) != "default.jpg":
+                    old_image_path = old_image.path
+                    if os.path.exists(old_image_path):
+                        try:
+                            os.remove(old_image_path)
+                        except Exception:
+                            pass
             u_form.save() 
             p_form.save()
             messages.success(request,f"Your account has been updated")
