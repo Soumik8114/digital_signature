@@ -135,3 +135,20 @@ def encrypt(request,file_id):
     file_object = get_object_or_404(UploadedFile, pk=file_id)
     public_url = file_object.uploaded_file.url
     physical_path = file_object.uploaded_file.path
+
+@login_required
+def delete_file_view(request, file_id):
+    if request.method == 'POST':
+        try:
+            file_to_delete = get_object_or_404(UploadedFile, pk=file_id, owner=request.user)
+            file_name = str(file_to_delete)
+            file_to_delete.uploaded_file.delete()
+            file_to_delete.delete()
+
+            messages.success(request, f"File '{file_name}' was deleted successfully.")
+
+        except Exception as e:
+            messages.error(request, f"An error occurred while trying to delete the file: {e}")
+            
+    # Redirect back to the file list regardless of the outcome
+    return redirect('user_file_list')
