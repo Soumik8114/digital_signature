@@ -9,10 +9,15 @@
             <div class="card shadow-sm">
                 <div class="list-group list-group-flush">
                     {% for file in files %}
-                    <div class="list-group-item p-3">
+                    <div class="list-group-item p-3" {% if file.is_new %}data-new="true"{% endif %}>
                         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
                             <div class="mb-3 mb-md-0 me-md-3">
-                                <h5 class="mb-1 fw">{{ file }}</h5>
+                                <h5 class="mb-1 fw">
+                                    {{ file }}
+                                    {% if file.is_new %}
+                                    <span class="badge bg-primary ms-2 new-badge">New</span>
+                                    {% endif %}
+                                </h5>
                                 <small class="text-muted">Uploaded on: {{ file.upload_date|date:"F d, Y" }}</small>
                             </div>
                             <div class="d-flex align-items-center mt-2 mt-md-0 flex-shrink-0">
@@ -130,6 +135,21 @@
 </div>
 {% block scripts %}
 <script>
+    // Highlight new files with a "New" badge
+    // document.addEventListener("DOMContentLoaded", () => {
+    //     const newFileElements = document.querySelectorAll('[data-new="true"] .new-badge');
+    //     newFileElements.forEach(badge => {
+    //         badge.style.display = "inline-block"; // Show the "New" badge
+    //     });
+
+    //     // Remove the "New" badge after 5 seconds
+    //     setTimeout(() => {
+    //         newFileElements.forEach(badge => {
+    //             badge.style.display = "none";
+    //         });
+    //     }, 5000); // 5 seconds
+    // });
+
     const deleteModal = document.getElementById('deleteConfirmModal');
     deleteModal.addEventListener('show.bs.modal', function (event) {
         const button = event.relatedTarget;

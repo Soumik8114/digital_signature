@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.http import HttpResponse
 from .models import UploadedFile,UserKeyPair
 from .utils import sign_message, decrypt_key,verify_signature
+from .forms import MultipleFileUploadForm
 from django.contrib.auth.models import User
 from django.views.generic import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -20,13 +21,31 @@ def about(request):
 @login_required
 def upload_view(request):
     if request.method == 'POST':
-        uploaded_file = request.FILES.get('uploaded_file')
-        if uploaded_file:
-            new_file = UploadedFile(uploaded_file=uploaded_file, owner=request.user)
-            new_file.save()
-            
-            messages.success(request, f"Successfully uploaded '{new_file}'.")
+        form = MultipleFileUploadForm(request.POST, request.FILES)
+        uploaded_files = request.FILES.getlist('uploaded_files')  # Match the input name in the HTML
+
+        if len(uploaded_files) > 5:
+            messages.error(request, "You can upload a maximum of 5 files at a time.")
+            return redirect('sign-home')
+
+        if uploaded_files and form.is_valid():  # Ensure files are provided and the form is valid
+            files_saved_count = 0
+            for file in uploaded_files:
+                new_file = UploadedFile(
+                    owner=request.user,
+                    uploaded_file=file
+                )
+                new_file.save()
+                files_saved_count += 1
+
+            if files_saved_count > 0:
+                messages.success(request, f"{files_saved_count} file(s) uploaded successfully.")
+
             return redirect('user_file_list')
+
+        else:
+            messages.error(request, "The form was not valid or no files were provided. Please try again.")
+            return redirect('sign-home')
     
     return redirect('sign-home')
 
@@ -36,7 +55,20 @@ class UserFileListView(LoginRequiredMixin, ListView):
     context_object_name = 'files'
 
     def get_queryset(self):
-        return UploadedFile.objects.filter(owner=self.request.user)
+        # Fetch all files for the logged-in user
+        files = UploadedFile.objects.filter(owner=self.request.user)
+
+        # Mark files as "new" if they were uploaded in the last 5 minutes
+        from datetime import timedelta
+        from django.utils.timezone import now
+        recent_threshold = now() - timedelta(minutes=5)
+        for file in files:
+            file.is_new = file.upload_date >= recent_threshold
+
+        # Sort files: new files first, then by upload date (descending)
+        sorted_files = sorted(files, key=lambda f: (f.is_new, f.upload_date), reverse=True)
+
+        return sorted_files
 
 @login_required
 def sign_file_view(request):

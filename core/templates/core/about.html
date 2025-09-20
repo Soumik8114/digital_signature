@@ -2,4 +2,63 @@
 {% load static %}
 {% block content %}
 <h1>About Page</h1>
+<div class="container my-3">
+
+    <div class="row justify-content-left  mb-5">
+        <div class="col-md-10">
+            <p class="lead text-muted">A secure, web-based application designed to provide a complete and intuitive workflow for creating and verifying legally-binding digital signatures.</p>
+        </div>
+    </div>
+
+    <div class="row text-center mb-5">
+        <h2 class="mb-4">A Simple, Secure Process</h2>
+        <div class="col-md-4">
+            <div class="p-4 shadow-sm rounded-3 h-100">
+                <div class="fs-1 mb-3">📄</div>
+                <h3>1. Upload</h3>
+                <p class="text-muted">Securely upload any file. Your documents are linked to your account and kept private.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-4 shadow-sm rounded-3 h-100">
+                <div class="fs-1 mb-3">✍️</div>
+                <h3>2. Sign</h3>
+                <p class="text-muted">Sign your uploaded documents with a single click. Your unique, encrypted private key is used to create a verifiable cryptographic signature.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-4 shadow-sm rounded-3 h-100">
+                <div class="fs-1 mb-3">✅</div>
+                <h3>3. Verify</h3>
+                <p class="text-muted">Anyone can verify a document's authenticity. Our public verification tool confirms the signer's identity and ensures the file has not been altered.</p>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-5">
+
+    <div class="row align-items-center">
+        <div class="col-md-6">
+            <h2>Key Features</h2>
+            <ul class="list-unstyled mt-3">
+                <li class="mb-2"><strong>Automatic Key Generation:</strong> Secure RSA-2048 key pairs are automatically created for every new user.</li>
+                <li class="mb-2"><strong>Encrypted Private Keys:</strong> Your secret private key is always encrypted in our database, ensuring only you can use it.</li>
+                <li class="mb-2"><strong>User-Owned Files:</strong> You have full control over your documents, with the ability to manage, sign, and delete them.</li>
+                <li class="mb-2"><strong>Portable Signatures:</strong> Download a simple JSON signature file that contains everything needed for verification.</li>
+                <li class="mb-2"><strong>Public Verification:</strong> An easy-to-use tool for anyone to verify a signature without needing an account.</li>
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <h2>Benefits</h2>
+            <div class="p-4 bg-light rounded-3 mt-3">
+                <p><strong>Authenticity:</strong> Cryptographically prove who signed the document.</p>
+                <p><strong>Integrity:</strong> Guarantee that the document has not been changed or tampered with since it was signed.</p>
+                <p><strong>Non-Repudiation:</strong> The signer cannot deny having signed the document, providing strong legal evidence.</p>
+                <p><strong>Efficiency:</strong> Reduce paperwork, save time, and streamline your workflows in a secure, digital format.</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
 {% endblock content %} 

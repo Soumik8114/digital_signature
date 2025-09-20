@@ -26,7 +26,6 @@ def profile(request):
                                  instance=request.user.profile)
         old_image = request.user.profile.image
         if u_form.is_valid() and p_form.is_valid():
-            # Check if a new image is being uploaded
             if 'image' in request.FILES:
                 if old_image and os.path.basename(old_image.name) != "default.jpg":
                     old_image_path = old_image.path

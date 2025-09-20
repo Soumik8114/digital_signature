@@ -9,15 +9,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const fileNameDisplay = document.getElementById('fileNameDisplay');
     fileNameDisplay.style.display = 'none';
 
+    // Use a Map to store staged files, making it easy to avoid duplicates.
+    const stagedFiles = new Map();
+
     // When the "Select file" button is clicked, trigger the hidden file input
     selectFileBtn.addEventListener("click", () => {
         fileInput.click();
     });
 
-    // Listen for file selection through the file inputcon
+    // Listen for file selection through the file input
     fileInput.addEventListener("change", () => {
         if (fileInput.files.length > 0) {
-            handleFile(fileInput.files[0]);
+            addFilesToStage(fileInput.files);
         }
     });
 
@@ -45,105 +48,189 @@ document.addEventListener("DOMContentLoaded", () => {
     dropZone.addEventListener('drop', (e) => {
         const dt = e.dataTransfer;
         if (dt.files.length > 0) {
-            // Set the dropped file to our file input element
-            fileInput.files = dt.files;
-            handleFile(dt.files[0]);
+            addFilesToStage(dt.files);
         }
     }, false);
 
     /**
-    * Handles the selected file and generates a preview.
-    * @param {File} file The file selected by the user.
-    */
-    function handleFile(file) {
-        // Hide the prompt and clear any old preview immediately
+     * Creates a reasonably unique ID for a file object based on its properties.
+     * @param {File} file The file object.
+     * @returns {string} A unique identifier for the file.
+     */
+    const getFileId = (file) => {
+        return `${file.name}-${file.size}-${file.lastModified}`;
+    };
+
+    /**
+     * Adds new files to the staging area, avoiding duplicates.
+     * @param {FileList} files The files to add.
+     */
+    function addFilesToStage(files) {
+        Array.from(files).forEach(file => {
+            const fileId = getFileId(file);
+            if (!stagedFiles.has(fileId)) {
+                stagedFiles.set(fileId, file);
+            }
+        });
+        updateFileInputAndRenderPreviews();
+    }
+
+    /**
+     * Syncs the file input with our staged files and re-renders the previews.
+     */
+    function updateFileInputAndRenderPreviews() {
+        // Create a new FileList and assign it to the input
+        const dataTransfer = new DataTransfer();
+        stagedFiles.forEach(file => dataTransfer.items.add(file));
+        fileInput.files = dataTransfer.files;
+
+        // Re-render the previews
+        renderPreviews(Array.from(stagedFiles.values()));
+    }
+
+    /**
+     * Handles multiple files and generates previews for each.
+     * @param {File[]} files The files to render previews for.
+     */
+    function renderPreviews(files) {
+        // Hide the prompt and clear any old previews
         uploadPrompt.style.display = 'none';
-        previewContainer.innerHTML = '<p>Loading preview...</p>'; // Optional: Show a loading message
+        previewContainer.innerHTML = '';
 
-        // 🖼️ For an image file
-        if (file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = function (event) {
-                // KEY FIX: All DOM manipulation happens *inside* onload
-                previewContainer.innerHTML = ''; // Clear loading message
+        files.forEach(file => {
+            const fileId = getFileId(file);
+            const filePreview = document.createElement('div');
+            filePreview.className = 'file-preview';
+            filePreview.title = file.name; // Show filename on hover
+            filePreview.dataset.fileId = fileId; // Associate preview with a unique file ID
 
-                const img = document.createElement('img');
-                img.src = event.target.result;
-                previewContainer.appendChild(img);
+            // Create the overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay';
 
-                addRemoveButton();
-            };
-            reader.readAsDataURL(file);
+            const fileName = document.createElement('div');
+            fileName.className = 'file-name';
+            fileName.textContent = file.name;
+
+            const fileSize = document.createElement('div');
+            fileSize.className = 'file-size';
+            fileSize.textContent = `${(file.size / 1024).toFixed(2)} KB`; // Convert size to KB
+
+            overlay.appendChild(fileName);
+            overlay.appendChild(fileSize);
+
+            // Append the overlay to the preview
+            filePreview.appendChild(overlay);
+
+            // 🖼️ For an image file
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    const img = document.createElement('img');
+                    img.src = event.target.result;
+                    filePreview.appendChild(img);
+                    addRemoveButton(filePreview);
+                };
+                reader.readAsDataURL(file);
 
             // 📜 For a PDF file
-        } else if (file.type === 'application/pdf') {
-            const reader = new FileReader();
-            const pdfjsLib = window['pdfjs-dist/build/pdf'];
-            reader.onload = function (event) {
-                const typedarray = new Uint8Array(event.target.result);
+            } else if (file.type === 'application/pdf') {
+                const reader = new FileReader();
+                const pdfjsLib = window['pdfjs-dist/build/pdf'];
+                reader.onload = function (event) {
+                    const typedarray = new Uint8Array(event.target.result);
+                    pdfjsLib.getDocument(typedarray).promise.then(function (pdf) {
+                        pdf.getPage(1).then(function (page) {
+                            const canvas = document.createElement('canvas');
+                            const context = canvas.getContext('2d');
+                            const viewport = page.getViewport({ scale: 0.4 });
+                            canvas.height = viewport.height;
+                            canvas.width = viewport.width;
 
-                pdfjsLib.getDocument(typedarray).promise.then(function (pdf) {
-                    pdf.getPage(1).then(function (page) {
-                        const canvas = document.createElement('canvas');
-                        const context = canvas.getContext('2d');
-                        const viewport = page.getViewport({ scale: 0.4 });
-                        canvas.height = viewport.height;
-                        canvas.width = viewport.width;
+                            const renderContext = { canvasContext: context, viewport: viewport };
+                            const renderTask = page.render(renderContext);
 
-                        const renderContext = { canvasContext: context, viewport: viewport };
-                        const renderTask = page.render(renderContext);
-
-                        // KEY FIX: Wait for the render to complete before appending to DOM
-                        renderTask.promise.then(function () {
-                            previewContainer.innerHTML = ''; // Clear loading message        
-                            fileNameDisplay.textContent = `File: ${file.name}`;
-                            fileNameDisplay.style.display = 'block';
-                            previewContainer.appendChild(canvas,);
-                            addRemoveButton();
+                            renderTask.promise.then(function () {
+                                filePreview.appendChild(canvas);
+                                addRemoveButton(filePreview);
+                            });
                         });
+                    }, function (reason) {
+                        console.error(reason);
+                        filePreview.innerHTML = '<p>Error loading PDF preview.</p>';
                     });
-                }, function (reason) {
-                    // PDF loading error
-                    console.error(reason);
-                    previewContainer.innerHTML = '<p>Error loading PDF preview.</p>';
-                });
-            };
-            reader.readAsArrayBuffer(file);
+                };
+                reader.readAsArrayBuffer(file);
 
             // 📁 For any other file
-        } else {
-            previewContainer.innerHTML = ''; // Clear loading message
-            const otherFileDiv = document.createElement('div');
-            otherFileDiv.className = 'file-info';
-            otherFileDiv.innerHTML = `<span class="icon">📁</span><p>${file.name}</p>`;
-            previewContainer.appendChild(otherFileDiv);
-            addRemoveButton();
+            } else {
+                const otherFileDiv = document.createElement('div');
+                otherFileDiv.className = 'file-info';
+                otherFileDiv.innerHTML = `<span class="icon">📁</span><p>${file.name}</p>`;
+                filePreview.appendChild(otherFileDiv);
+                addRemoveButton(filePreview);
+            }
+
+            previewContainer.appendChild(filePreview);
+        });
+
+        // Add a button to select more files if some are already staged
+        const addMoreContainer = document.getElementById('add-more-container');
+        if (addMoreContainer) addMoreContainer.remove();
+
+        if (files.length > 0) {
+            const container = document.createElement('div');
+            container.id = 'add-more-container';
+            container.className = 'text-center mt-3';
+            container.innerHTML = `<button type="button" id="select-more-files-btn" class="btn" style="background-color: rgba(128, 128, 128, 0.114);">Select more files</button>`;
+            dropZone.appendChild(container);
+
+            document.getElementById('select-more-files-btn').addEventListener('click', () => fileInput.click());
         }
     }
 
     /**
      * Helper function to create and add the remove button.
      */
-    function addRemoveButton() {
+    function addRemoveButton(filePreview) {
         const removeBtn = document.createElement('button');
         removeBtn.type = 'button';
         removeBtn.className = 'remove-file-btn';
         removeBtn.innerHTML = '&times;';
         removeBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            resetDropZone();
+            e.stopPropagation(); // Prevent the drop zone click event
+
+            const previewToRemove = e.target.closest('.file-preview');
+            const fileIdToRemove = previewToRemove.dataset.fileId;
+
+            // Remove the file from our staging map
+            stagedFiles.delete(fileIdToRemove);
+
+            // Re-sync the input and re-render the previews
+            updateFileInputAndRenderPreviews();
+
+            // If no files are left, reset the drop zone to its initial state
+            if (stagedFiles.size === 0) {
+                resetDropZone();
+            }
         });
-        previewContainer.appendChild(removeBtn);
+        filePreview.appendChild(removeBtn);
     }
 
     /**
      * Resets the drop zone to its initial state.
      */
     function resetDropZone() {
-        fileInput.value = null;
+        stagedFiles.clear();
+        // Reset the file input by creating an empty FileList
+        fileInput.files = new DataTransfer().files;
         previewContainer.innerHTML = '';
         fileNameDisplay.textContent = '';
         fileNameDisplay.style.display = 'none';
         uploadPrompt.style.display = 'block';
+
+        // Remove the "Select more files" button if it exists
+        const addMoreContainer = document.getElementById('add-more-container');
+        if (addMoreContainer) addMoreContainer.remove();
     }
 });

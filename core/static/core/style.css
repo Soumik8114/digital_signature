@@ -75,3 +75,65 @@
 .remove-file-btn:hover {
     opacity: 1;
 }
+
+.file-preview {
+    position: relative;
+    margin: 10px;
+    display: inline-block;
+    vertical-align: top;
+    width: 150px;
+    height: 150px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    overflow: hidden;
+    text-align: center;
+    transition: transform 0.3s ease; /* Add a slight zoom effect */
+}
+
+.file-preview:hover {
+    transform: scale(1); /* Slight zoom on hover */
+}
+
+.file-preview img, .file-preview canvas {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* Overlay container */
+.file-preview .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent black overlay */
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease; /* Smooth fade-in effect */
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+/* Show overlay on hover */
+.file-preview:hover .overlay {
+    opacity: 1;
+}
+
+/* Style for the filename and file size */
+.file-preview .overlay .file-name {
+    font-weight: bold;
+    margin-bottom: 5px;
+    word-wrap: break-word; /* Prevent long filenames from overflowing */
+}
+
+.file-preview .overlay .file-size {
+    font-size: 0.8rem;
+    color: #ccc;
+}
