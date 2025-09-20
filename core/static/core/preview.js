@@ -1,5 +1,3 @@
-// static/js/preview.js
-
 document.addEventListener("DOMContentLoaded", () => {
     const dropZone = document.getElementById("drop-zone");
     const fileInput = document.getElementById("file-input");
@@ -162,7 +160,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 };
                 reader.readAsArrayBuffer(file);
 
-            // 📁 For any other file
             } else {
                 const otherFileDiv = document.createElement('div');
                 otherFileDiv.className = 'file-info';

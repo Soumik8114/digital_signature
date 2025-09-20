@@ -135,21 +135,6 @@
 </div>
 {% block scripts %}
 <script>
-    // Highlight new files with a "New" badge
-    // document.addEventListener("DOMContentLoaded", () => {
-    //     const newFileElements = document.querySelectorAll('[data-new="true"] .new-badge');
-    //     newFileElements.forEach(badge => {
-    //         badge.style.display = "inline-block"; // Show the "New" badge
-    //     });
-
-    //     // Remove the "New" badge after 5 seconds
-    //     setTimeout(() => {
-    //         newFileElements.forEach(badge => {
-    //             badge.style.display = "none";
-    //         });
-    //     }, 5000); // 5 seconds
-    // });
-
     const deleteModal = document.getElementById('deleteConfirmModal');
     deleteModal.addEventListener('show.bs.modal', function (event) {
         const button = event.relatedTarget;
