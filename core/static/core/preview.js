@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Use a Map to store staged files, making it easy to avoid duplicates.
     const stagedFiles = new Map();
+    const MAX_FILES = 5;
 
     // When the "Select file" button is clicked, trigger the hidden file input
     selectFileBtn.addEventListener("click", () => {
@@ -61,16 +62,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /**
      * Adds new files to the staging area, avoiding duplicates.
+     * A maximum of 5 files can be staged.
      * @param {FileList} files The files to add.
      */
     function addFilesToStage(files) {
-        Array.from(files).forEach(file => {
+        const filesToAdd = Array.from(files);
+        const spaceLeft = MAX_FILES - stagedFiles.size;
+
+        if (filesToAdd.length > spaceLeft) {
+            alert(`You can only upload a maximum of ${MAX_FILES} files. Adding the first ${spaceLeft > 0 ? spaceLeft : 0} valid file(s) from your selection.`);
+            if (spaceLeft <= 0) {
+                return; // No space left, do nothing.
+            }
+        }
+
+        let addedCount = 0;
+        for (const file of filesToAdd) {
+            if (addedCount >= spaceLeft) {
+                break; // Stop when we've filled the available space
+            }
             const fileId = getFileId(file);
             if (!stagedFiles.has(fileId)) {
                 stagedFiles.set(fileId, file);
+                addedCount++;
             }
-        });
-        updateFileInputAndRenderPreviews();
+        }
+
+        if (addedCount > 0) {
+            updateFileInputAndRenderPreviews();
+        }
     }
 
     /**
@@ -131,7 +151,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 };
                 reader.readAsDataURL(file);
 
-            // 📜 For a PDF file
             } else if (file.type === 'application/pdf') {
                 const reader = new FileReader();
                 const pdfjsLib = window['pdfjs-dist/build/pdf'];
@@ -163,7 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 const otherFileDiv = document.createElement('div');
                 otherFileDiv.className = 'file-info';
-                otherFileDiv.innerHTML = `<span class="icon">📁</span><p>${file.name}</p>`;
+                otherFileDiv.innerHTML = `<span class="icon">📜</span><p>${file.name}</p>`;
                 filePreview.appendChild(otherFileDiv);
                 addRemoveButton(filePreview);
             }
@@ -171,7 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
             previewContainer.appendChild(filePreview);
         });
 
-        // Add a button to select more files if some are already staged
+        // Add a button to select more files or show a limit message
         const addMoreContainer = document.getElementById('add-more-container');
         if (addMoreContainer) addMoreContainer.remove();
 
@@ -179,10 +198,16 @@ document.addEventListener("DOMContentLoaded", () => {
             const container = document.createElement('div');
             container.id = 'add-more-container';
             container.className = 'text-center mt-3';
-            container.innerHTML = `<button type="button" id="select-more-files-btn" class="btn" style="background-color: rgba(128, 128, 128, 0.114);">Select more files</button>`;
-            dropZone.appendChild(container);
 
-            document.getElementById('select-more-files-btn').addEventListener('click', () => fileInput.click());
+            if (files.length < MAX_FILES) {
+                container.innerHTML = `<button type="button" id="select-more-files-btn" class="btn" style="background-color: rgba(128, 128, 128, 0.114);">Select more files</button>`;
+                dropZone.appendChild(container);
+                document.getElementById('select-more-files-btn').addEventListener('click', () => fileInput.click());
+            } else {
+                container.innerHTML = `<button type="button" class="btn" style="background-color: rgba(128, 128, 128, 0.114); cursor: not-allowed; opacity: 0.6;" disabled>Select more files</button>
+                                     <p class="text-muted mt-2">Maximum of ${MAX_FILES} files reached.</p>`;
+                dropZone.appendChild(container);
+            }
         }
     }
 
